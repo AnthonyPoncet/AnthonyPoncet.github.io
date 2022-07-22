@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset=UTF-8>
+        <title>Harry Podle</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <style>
+            body { background-color: transparent !important; }
+            body, html { color: #fff; }
+            html { background-image: url("https://wallpaper.dog/large/933708.jpg"); height: 100%; background-position: center; background-repeat: no-repeat; background-size: cover; }
+            .container { display: flex; justify-content: center; align-items: center; flex-direction: column; text-align: center; width: 100%; height: 100%; }
+            .sub-container { display: flex; justify-content: center; align-items: center; flex-direction: column; text-align: center; max-width: 750px; border-radius: 8px; }
+            .top-container { display: flex; justify-content: space-evenly; width: 80%; max-width: 365px; margin-top: 5rem; border: 2px solid; border-radius: 8px; background-color: #25262b; border-color: #d6c452;}
+            .top { margin-top: 1rem; }
+            .logo { padding: 16px;}
+            .game { font-size: 2rem; margin-bottom: 1rem; width: 80%; max-width: 750px; border: 2px solid; border-radius: 8px; background-color: #25262b; border-color: #d6c452;}
+            .answers { width: 80%; }
+            .guess-input { position: relative; display: inline-block; width: 100%; }
+            .dropbox-prompt { display: none; position: absolute; overflow: auto; z-index: 1; border: 1px solid #ddd; width: 92%; background-color: #25262b; border-radius: 8px; border-color: #d6c452; color: #fff; padding: 10px; text-align: left;}
+            .dropbox-item { cursor: pointer; }
+            .answer-input { width: 80%; border-radius: 8px; background-color: #25262b; border-color: #d6c452; color: #fff; padding: 10px 5px; }
+            .ok-button { background-color: #25262b; border-radius: 8px; border-color: #d6c452; color: #fff; padding: 10px;}
+            input:focus { outline: none; }
+            .dropbox-prompt a { display: block; }
+            .current-answer { width: 160%; margin-left: -30%; }
+            .card-container { display: flex; flex-wrap: wrap;}
+            .card { flex-basis: calc(14.2% - 4px); margin: 2px; max-width: calc(14.2% - 4px); }
+            .card-answer { margin: 1px; border: 1px solid; border-color: #000;}
+            .card-answer:before { content: ""; display: block; padding-top: 25%;}
+            .card-answer:after { content: ""; display: block; padding-top: 25%;}
+            .card-valid { background-color: green; }
+            .card-invalid { background-color: red; }
+        </style>
+    </head>
+    <body>
+        <div class="bg"></div>
+        <div class="container">
+            <div class="top-container">
+                <img class="logo" src="https://fontmeme.com/permalink/220721/ed66c53bb2c63ce73057ed7d37ce90e6.png" alt="harry-potter-font" border="0">
+            </div>
+            <div class="container top">
+                <div class="sub-container">
+                    <div class="game">
+                        <p>Guess today's HP character</p>
+                    </div>
+                    <div class="answers">
+                        <div class="guess-input">
+                            <input type="text" placeholder="Type your answer..." id="answer-input" class="answer-input">
+                            <button id="validate-answer" class="ok-button">Ok</button>
+                            <div id="answer-prompt" class="dropbox-prompt">
+                            </div>
+                        </div>
+                        <div id="current-answer" class="current-answer">
+                            <div class="card-container">
+                                <div class="card"><p>Name</p><hr/></div>
+                                <div class="card"><p>Gender</p><hr/></div>
+                                <div class="card"><p>Species</p><hr/></div>
+                                <div class="card"><p>Magic</p><hr/></div>
+                                <div class="card"><p>Job</p><hr/></div>
+                                <div class="card"><p>Mention</p><hr/></div>
+                                <div class="card"><p>House</p><hr/></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div id="bottom"></div>
+        </div>
+
+        <script>
+            answers = [
+                { name: "Hannah Abbott", gender: "Female", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1979, school_house: "Hufflepuff" },
+                { name: "Bathilda Bagshot", gender: "Female", species: "Human", magic: "Wizard", job: "Author", first_mention: 1, year_of_birth: 1873, school_house: "Unknown" },
+                { name: "Katie Bell", gender: "Female", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1978, school_house: "Gryffindor" },
+                { name: "Cuthbert Binns", gender: "Male", species: "Ghost", magic: "Wizard", job: "Professor", first_mention: 1, year_of_birth: 1890, school_house: "Hogwarts" },
+                { name: "Phineas Nigellus Black", gender: "Male", species: "Human", magic: "Wizard", job: "Headmaster", first_mention: 5, year_of_birth: 1847, school_house: "Slytherin" },
+                { name: "Sirius Black", gender: "Male", species: "Human", magic: "Wizard", job: "None", first_mention: 1, year_of_birth: 1959, school_house: "Gryffindor" },
+                { name: "Susan Bones", gender: "Female", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1979, school_house: "Hufflepuff" },
+                { name: "Lavender Brown", gender: "Female", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1979, school_house: "Gryffindor" },
+                { name: "Millicent Bulstrode", gender: "Female", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1979, school_house: "Slytherin" },
+                { name: "Charity Burbage", gender: "Female", species: "Human", magic: "Wizard", job: "Professor", first_mention: 7, year_of_birth: undefined, school_house: "Hogwarts" },
+                { name: "Alecto Carrow", gender: "Female", species: "Human", magic: "Wizard", job: "Death eater", first_mention: 4, year_of_birth: undefined, school_house: "Slytherin" },
+                { name: "Amycus Carrow", gender: "Male", species: "Human", magic: "Wizard", job: "Death eater", first_mention: 6, year_of_birth: 1964, school_house: "Slytherin" },
+                { name: "Cho Chang", gender: "Female", species: "Human", magic: "Wizard", job: "Student", first_mention: 3, year_of_birth: 1978, school_house: "Ravenclaw" },
+                { name: "Penelope Clearwater", gender: "Female", species: "Human", magic: "Wizard", job: "Student", first_mention: 2, year_of_birth: 1975, school_house: "Ravenclaw" },
+                { name: "Vincent Crabbe", gender: "Male", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1979, school_house: "Slytherin" },
+                { name: "Colin Creevey", gender: "Male", species: "Human", magic: "Wizard", job: "Student", first_mention: 2, year_of_birth: 1981, school_house: "Gryffindor" },
+                { name: "Barty Crouch Sr", gender: "Male", species: "Human", magic: "Wizard", job: "Minister", first_mention: 4, year_of_birth: 1942, school_house: "Unknown" },
+                { name: "Barty Crouch Jr", gender: "Male", species: "Human", magic: "Wizard", job: "Death eater", first_mention: 4, year_of_birth: 1962, school_house: "Unknown" },
+                { name: "Fleur Delacour", gender: "Female", species: "Human", magic: "Wizard", job: "Student", first_mention: 4, year_of_birth: 1977, school_house: "Beauxbatons" },
+                { name: "Amos Diggory", gender: "Male", species: "Human", magic: "Wizard", job: "Minister", first_mention: 4, year_of_birth: undefined, school_house: "Unknown" },
+                { name: "Cedric Diggory", gender: "Male", species: "Human", magic: "Wizard", job: "Student", first_mention: 3, year_of_birth: 1977, school_house: "Hufflepuff" },
+                { name: "Antonin Dolohov", gender: "Male", species: "Human", magic: "Wizard", job: "Death eater", first_mention: 4, year_of_birth: undefined, school_house: "Unknown" },
+                { name: "Aberforth Dumbledore", gender: "Male", species: "Human", magic: "Wizard", job: "InnKeeper", first_mention: 4, year_of_birth: 1983, school_house: "Unknown" },
+                { name: "Albus Dumbledore", gender: "Male", species: "Human", magic: "Wizard", job: "Headmaster", first_mention: 1, year_of_birth: 1881, school_house: "Gryffindor" },
+                { name: "Ariana Dumbledore", gender: "Female", species: "Human", magic: "Wizard", job: "Dead", first_mention: 7, year_of_birth: 1985, school_house: "None" },
+                { name: "Dudley Dursley", gender: "Male", species: "Human", magic: "Muggle", job: "Student", first_mention: 1, year_of_birth: 1980, school_house: "None" },
+                { name: "Marge Dursley", gender: "Female", species: "Human", magic: "Muggle", job: "Unknown", first_mention: 3, year_of_birth: 1961, school_house: "None" },
+                { name: "Petunia Dursley", gender: "Female", species: "Human", magic: "Muggle", job: "Housewife", first_mention: 1, year_of_birth: 1960, school_house: "None" },
+                { name: "Vernon Dursley", gender: "Male", species: "Human", magic: "Muggle", job: "Drill seller", first_mention: 1, year_of_birth: 1961, school_house: "None" },
+                { name: "Marietta Edgecombe", gender: "Female", species: "Human", magic: "Wizard", job: "Student", first_mention: 5, year_of_birth: 1978, school_house: "Ravenclaw" },
+                { name: "Arabella Figg", gender: "Female", species: "Human", magic: "Squib", job: "None", first_mention: 1, year_of_birth: undefined, school_house: "None" },
+                { name: "Argus Filch", gender: "Male", species: "Human", magic: "Squib", job: "Caretaker", first_mention: 1, year_of_birth: 1951, school_house: "Hogwarts" },
+                { name: "Justin Finch-Fletchley", gender: "Male", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1979, school_house: "Hufflepuff" },
+                { name: "Seamus Finnigan", gender: "Male", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1979, school_house: "Gryffindor" },
+                { name: "Nicolas Flamel", gender: "Male", species: "Human", magic: "Wizard", job: "Alchemist", first_mention: 1, year_of_birth: 1300, school_house: "Beauxbatons" },
+                { name: "Mundungus Fletcher", gender: "Male", species: "Human", magic: "Wizard", job: "Robber", first_mention: 2, year_of_birth: 1962, school_house: "Unknown" },
+                { name: "Filius Flitwick", gender: "Male", species: "Human", magic: "Wizard", job: "Professor", first_mention: 1, year_of_birth: 1958, school_house: "Ravenclaw" },
+                { name: "Cornelius Fudge", gender: "Male", species: "Human", magic: "Wizard", job: "Minister", first_mention: 1, year_of_birth: 1964, school_house: "Unknown" },
+                { name: "Gregory Goyle", gender: "Male", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1979, school_house: "Slytherin" },
+                { name: "Hermione Granger", gender: "Female", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1979, school_house: "Gryffindor" },
+                { name: "Gregorovitch", gender: "Male", species: "Human", magic: "Wizard", job: "Wandmaker", first_mention: 4, year_of_birth: 1909, school_house: "Unknown" },
+                { name: "Fenrir Greyback", gender: "Male", species: "Werewolf", magic: "Creature", job: "Death eater", first_mention: 3, year_of_birth: 1945, school_house: "Unknown" },
+                { name: "Gellert Grindelwald", gender: "Male", species: "Human", magic: "Wizard", job: "Dark wizard", first_mention: 1, year_of_birth: 1882, school_house: "Durmstrang" },
+                { name: "Godric Gryffindor", gender: "Male", species: "Human", magic: "Wizard", job: "Dead", first_mention: 1, year_of_birth: 976, school_house: "Gryffindor" },
+                { name: "Rubeus Hagrid", gender: "Male", species: "Half-Giant", magic: "Wizard", job: "Gamekeeper", first_mention: 1, year_of_birth: 1928, school_house: "Gryffindor" },
+                { name: "Rolanda Hooch", gender: "Female", species: "Human", magic: "Wizard", job: "Professor", first_mention: 1, year_of_birth: 1918, school_house: "Hogwarts" },
+                { name: "Helga Hufflepuff", gender: "Female", species: "Human", magic: "Wizard", job: "Dead", first_mention: 1, year_of_birth: 976, school_house: "Hufflepuff" },
+                { name: "Angelina Johnson", gender: "Female", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1977, school_house: "Gryffindor" },
+                { name: "Lee Jordan", gender: "Male", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1977, school_house: "Gryffindor" },
+                { name: "Igor Karkaroff", gender: "Male", species: "Human", magic: "Wizard", job: "Headmaster", first_mention: 4, year_of_birth: 1965, school_house: "Durmstrang" },
+                { name: "Viktor Krum", gender: "Male", species: "Human", magic: "Wizard", job: "Student", first_mention: 4, year_of_birth: 1976, school_house: "Durmstrang" },
+                { name: "Bellatrix Lestrange", gender: "Female", species: "Human", magic: "Wizard", job: "Death eater", first_mention: 4, year_of_birth: 1951, school_house: "Slytherin" },
+                { name: "Gilderoy Lockhart", gender: "Male", species: "Human", magic: "Wizard", job: "Professor", first_mention: 2, year_of_birth: 1964, school_house: "Ravenclaw" },
+                { name: "Augusta Longbottom", gender: "Female", species: "Human", magic: "Wizard", job: "None", first_mention: 1, year_of_birth: 1947, school_house: "Hogwarts" },
+                { name: "Neville Longbottom", gender: "Male", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1980, school_house: "Gryffindor" },
+                { name: "Luna Lovegood", gender: "Female", species: "Human", magic: "Wizard", job: "Student", first_mention: 4, year_of_birth: 1981, school_house: "Ravenclaw" },
+                { name: "Xenophilius Lovegood", gender: "Male", species: "Human", magic: "Wizard", job: "Editor", first_mention: 4, year_of_birth: 1964, school_house: "Unknown" },
+                { name: "Remus Lupin", gender: "Male", species: "Werewolf", magic: "Creature", job: "Professor", first_mention: 3, year_of_birth: 1960, school_house: "Gryffindor" },
+                { name: "Walden Macnair", gender: "Male", species: "Human", magic: "Wizard", job: "Death eater", first_mention: 3, year_of_birth: 1970, school_house: "Unknown" },
+                { name: "Draco Malfoy", gender: "Male", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1980, school_house: "Slytherin" },
+                { name: "Lucius Malfoy", gender: "Male", species: "Human", magic: "Wizard", job: "Death eater", first_mention: 1, year_of_birth: 1953, school_house: "Slytherin" },
+                { name: "Narcissa Malfoy", gender: "Female", species: "Human", magic: "Wizard", job: "None", first_mention: 1, year_of_birth: 1955, school_house: "Slytherin" },
+                { name: "Olympe Maxime", gender: "Female", species: "Half-Giant", magic: "Wizard", job: "Headmistress", first_mention: 4, year_of_birth: undefined, school_house: "Beauxbatons" },
+                { name: "Ernie Macmillan", gender: "Male", species: "Human", magic: "Wizard", job: "Student", first_mention: 2, year_of_birth: 1980, school_house: "Hufflepuff" },
+                { name: "Minerva McGonagall", gender: "Female", species: "Human", magic: "Wizard", job: "Professor", first_mention: 1, year_of_birth: undefined, school_house: "Gryffindor" },
+                { name: "Cormac McLaggen", gender: "Male", species: "Human", magic: "Wizard", job: "Student", first_mention: 6, year_of_birth: 1978, school_house: "Gryffindor" },
+                { name: "Alastor Moody", gender: "Male", species: "Human", magic: "Wizard", job: "Auror", first_mention: 4, year_of_birth: 1959, school_house: "Hogwarts" },
+                { name: "Garrick Ollivander", gender: "Male", species: "Human", magic: "Wizard", job: "Wandmaker", first_mention: 1, year_of_birth: 1909, school_house: "Ravenclaw" },
+                { name: "Pansy Parkinson", gender: "Female", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1979, school_house: "Slytherin" },
+                { name: "Padma Patil", gender: "Female", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1979, school_house: "Ravenclaw" },
+                { name: "Parvati Patil", gender: "Female", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1979, school_house: "Gryffindor" },
+                { name: "Peter Pettigrew", gender: "Male", species: "Human", magic: "Wizard", job: "Death eater", first_mention: 3, year_of_birth: 1959, school_house: "Gryffindor" },
+                { name: "Irma Pince", gender: "Female", species: "Human", magic: "Wizard", job: "Librarian", first_mention: 1, year_of_birth: 1966, school_house: "Hogwarts" },
+                { name: "Poppy Pomfrey", gender: "Female", species: "Human", magic: "Wizard", job: "Nurse", first_mention: 1, year_of_birth: 1954, school_house: "Unknown" },
+                { name: "Harry Potter", gender: "Male", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1980, school_house: "Gryffindor" },
+                { name: "James Potter", gender: "Male", species: "Human", magic: "Wizard", job: "Dead", first_mention: 1, year_of_birth: 1960, school_house: "Gryffindor" },
+                { name: "Lily Potter", gender: "Female", species: "Human", magic: "Wizard", job: "Dead", first_mention: 1, year_of_birth: 1960, school_house: "Gryffindor" },
+                { name: "Quirinus Quirrell", gender: "Male", species: "Human", magic: "Wizard", job: "Professor", first_mention: 1, year_of_birth: 1967, school_house: "Ravenclaw" },
+                { name: "Helena Ravenclaw", gender: "Female", species: "Ghost", magic: "Wizard", job: "Dead", first_mention: 1, year_of_birth: 982, school_house: "Ravenclaw" },
+                { name: "Rowena Ravenclaw", gender: "Female", species: "Human", magic: "Wizard", job: "Dead", first_mention: 2, year_of_birth: 976, school_house: "Ravenclaw" },
+                { name: "Thomas Marvolo Riddle", gender: "Male", species: "Human", magic: "Wizard", job: "Dark wizard", first_mention: 1, year_of_birth: 1926, school_house: "Slytherin" },
+                { name: "Augustus Rookwood", gender: "Male", species: "Human", magic: "Wizard", job: "Death eater", first_mention: 4, year_of_birth: 1964, school_house: "Unknown" },
+                { name: "Rufus Scrimgeour", gender: "Male", species: "Human", magic: "Wizard", job: "Auror", first_mention: 5, year_of_birth: 1968, school_house: "Hogwarts" },
+                { name: "Kingsley Shacklebolt", gender: "Male", species: "Human", magic: "Wizard", job: "Auror", first_mention: 5, year_of_birth: 1960, school_house: "Hogwarts" },
+                { name: "Aurora Sinistra", gender: "Female", species: "Human", magic: "Wizard", job: "Professor", first_mention: 2, year_of_birth: 1968, school_house: "Unknown" },
+                { name: "Rita Skeeter", gender: "Female", species: "Human", magic: "Wizard", job: "Journalist", first_mention: 4, year_of_birth: 1951, school_house: "Unknown" },
+                { name: "Horace Slughorn", gender: "Male", species: "Human", magic: "Wizard", job: "Professor", first_mention: 6, year_of_birth: 1882, school_house: "Slytherin" },
+                { name: "Salazar Slytherin", gender: "Male", species: "Human", magic: "Wizard", job: "Dead", first_mention: 2, year_of_birth: 976, school_house: "Slytherin" },
+                { name: "Severus Snape", gender: "Male", species: "Human", magic: "Wizard", job: "Professor", first_mention: 1, year_of_birth: 1960, school_house: "Slytherin" },
+                { name: "Alicia Spinnet", gender: "Female", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1977, school_house: "Gryffindor" },
+                { name: "Pomona Sprout", gender: "Female", species: "Human", magic: "Wizard", job: "Professor", first_mention: 1, year_of_birth: undefined, school_house: "Hufflepuff" },
+                { name: "Dean Thomas", gender: "Male", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1979, school_house: "Gryffindor" },
+                { name: "Andromeda Tonks", gender: "Female", species: "Human", magic: "Wizard", job: "Auror", first_mention: 5, year_of_birth: 1951, school_house: "Slytherin" },
+                { name: "Nymphadora Tonks", gender: "Female", species: "Human", magic: "Wizard", job: "Auror", first_mention: 5, year_of_birth: 1972, school_house: "Hufflepuff" },
+                { name: "Ted Tonks", gender: "Male", species: "Human", magic: "Wizard", job: "", first_mention: 5, year_of_birth: undefined, school_house: "Hogwarts" },
+                { name: "Sybill Trelawney", gender: "Female", species: "Human", magic: "Wizard", job: "Professor", first_mention: 3, year_of_birth: 1963, school_house: "Ravenclaw" },
+                { name: "Dolores Umbridge", gender: "Female", species: "Human", magic: "Wizard", job: "Minister", first_mention: 5, year_of_birth: 1961, school_house: "Slytherin" },
+                { name: "Romilda Vane", gender: "Female", species: "Human", magic: "Wizard", job: "Student", first_mention: 4, year_of_birth: 1981, school_house: "Gryffindor" },
+                { name: "Septima Vector", gender: "Female", species: "Human", magic: "Wizard", job: "Professor", first_mention: 3, year_of_birth: 1974, school_house: "Hogwarts" },
+                { name: "Moaning Myrtle", gender: "Female", species: "Ghost", magic: "Wizard", job: "Dead", first_mention: 2, year_of_birth: 1928, school_house: "Ravenclaw" },
+                { name: "Arthur Weasley", gender: "Male", species: "Human", magic: "Wizard", job: "Minister", first_mention: 1, year_of_birth: 1950, school_house: "Gryffindor" },
+                { name: "Bill Weasley", gender: "Male", species: "Human", magic: "Wizard", job: "Gringotts", first_mention: 1, year_of_birth: 1970, school_house: "Gryffindor" },
+                { name: "Charlie Weasley", gender: "Male", species: "Human", magic: "Wizard", job: "Dragon trainer", first_mention: 1, year_of_birth: 1972, school_house: "Gryffindor" },
+                { name: "Fred Weasley", gender: "Male", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1978, school_house: "Gryffindor" },
+                { name: "George Weasley", gender: "Male", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1978, school_house: "Gryffindor" },
+                { name: "Ginny Weasley", gender: "Female", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1981, school_house: "Gryffindor" },
+                { name: "Molly Weasley", gender: "Female", species: "Human", magic: "Wizard", job: "Housewife", first_mention: 1, year_of_birth: 1949, school_house: "Gryffindor" },
+                { name: "Percy Weasley", gender: "Male", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1976, school_house: "Gryffindor" },
+                { name: "Ron Weasley", gender: "Male", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1980, school_house: "Gryffindor" },
+                { name: "Blaise Zabini", gender: "Male", species: "Human", magic: "Wizard", job: "Student", first_mention: 1, year_of_birth: 1979, school_house: "Slytherin" },
+                { name: "Aragog", gender: "Male", species: "Spider", magic: "None", job: "None", first_mention: 2, year_of_birth: 1942, school_house: "None" },
+                { name: "Bane", gender: "Male", species: "Centaur", magic: "None", job: "None", first_mention: 1, year_of_birth: undefined, school_house: "None" },
+                { name: "Buckbeak", gender: "Male", species: "Hippogriff", magic: "None", job: "None", first_mention: 3, year_of_birth: 1993, school_house: "None" },
+                { name: "Crookshanks", gender: "Male", species: "Cat", magic: "None", job: "None", first_mention: 3, year_of_birth: 1993, school_house: "None" },
+                { name: "Dobby", gender: "Male", species: "House-elf", magic: "Creature", job: "House-elf", first_mention: 2, year_of_birth: undefined, school_house: "None" },
+                { name: "Errol", gender: "Male", species: "Owl", magic: "None", job: "None", first_mention: 2, year_of_birth: 1984, school_house: "None" },
+                { name: "Fang", gender: "Male", species: "Dog", magic: "None", job: "None", first_mention: 1, year_of_birth: 1984, school_house: "None" },
+                { name: "Fawkes", gender: "Male", species: "Phoenix", magic: "Creature", job: "None", first_mention: 1, year_of_birth: 1938, school_house: "None" },
+                { name: "Firenze", gender: "Male", species: "Centaur", magic: "Creature", job: "Professor", first_mention: 1, year_of_birth: undefined, school_house: "None" },
+                { name: "Fluffy", gender: "Male", species: "Three headed dog", magic: "Creature", job: "None", first_mention: 1, year_of_birth: 1991, school_house: "None" },
+                { name: "Grawp", gender: "Male", species: "Giant", magic: "None", job: "None", first_mention: 5, year_of_birth: 1931, school_house: "None" },
+                { name: "Griphook", gender: "Male", species: "Goblin", magic: "Creature", job: "Gringotts", first_mention: 1, year_of_birth: 1990, school_house: "None" },
+                { name: "Hedwig", gender: "Female", species: "Owl", magic: "None", job: "None", first_mention: 1, year_of_birth: 1991, school_house: "None" },
+                { name: "Kreacher", gender: "Male", species: "House-elf", magic: "Creature", job: "House-elf", first_mention: 5, year_of_birth: 1351, school_house: "None" },
+                { name: "Nagini", gender: "", species: "Snake", magic: "None", job: "Horcruxe", first_mention: 4, year_of_birth: 1927, school_house: "None" },
+                { name: "Nicholas de Mimsy-Porpington", gender: "Male", species: "Ghost", magic: "Wizard", job: "Dead", first_mention: 1, year_of_birth: 1401, school_house: "None" },
+                { name: "Norbert", gender: "", species: "Dragon", magic: "Creature", job: "None", first_mention: 1, year_of_birth: 1992, school_house: "None" },
+                { name: "Peeves", gender: "Male", species: "Poltergeist", magic: "Creature", job: "Poltergeist", first_mention: 1, year_of_birth: undefined, school_house: "None" },
+                { name: "Pigwidgeon", gender: "Male", species: "Owl", magic: "None", job: "None", first_mention: 3, year_of_birth: 1994, school_house: "None" },
+                { name: "Scabbers", gender: "Male", species: "Rat", magic: "Wizard", job: "None", first_mention: 1, year_of_birth: undefined, school_house: "None" },
+                { name: "Winky", gender: "Female", species: "House-elf", magic: "Creature", job: "House-elf", first_mention: 4, year_of_birth: 1981, school_house: "None" }
+            ];
+
+            valid_answer = answers[Math.floor(Math.random() * answers.length)];
+            console.log(valid_answer.name);
+
+            //Handle click on dropbox
+            function fillAnswer(value) {
+                $("#answer-prompt").hide();
+                $("#answer-input").val(value);
+            }
+
+            //Fill possible values
+            $(document).ready(function(){
+                answers.forEach(answer => $("#answer-prompt").append("<div id=\"" + answer.name.replace(/\s+/g, '-').toLowerCase() + "\" class=\"dropbox-item\" onclick=\"fillAnswer('" + answer.name + "')\">" + answer.name + "</div>"));
+            });
+
+            //Display dropbox
+            $(document).ready(function(){
+                $("#answer-input").on("keyup", function() {
+                    var value = $(this).val().toLowerCase();
+                    if (value.length === 0) {
+                        $("#answer-prompt").hide();
+                        return;
+                    } else {
+                        $("#answer-prompt").show();
+                    }
+                    $("#answer-prompt div").filter(function() {
+                        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                    });
+                });
+            });
+
+            //Validate answer
+            $(document).ready(function(){
+                $("#validate-answer").on("click", function() {
+                    var value = $("#answer-input").val();
+                    $("#answer-input").val("");
+                    $("#"+value.replace(/\s+/g, '-').toLowerCase()).remove();
+                    var current = answers.find(answer => { return answer.name === value });
+
+                    var valid_name = (valid_answer.name === current.name) ? "card-valid" : "card-invalid";
+                    var valid_gender = (valid_answer.gender === current.gender) ? "card-valid" : "card-invalid";
+                    var valid_species = (valid_answer.species === current.species) ? "card-valid" : "card-invalid";
+                    var valid_magic = (valid_answer.magic === current.magic) ? "card-valid" : "card-invalid";
+                    var valid_job = (valid_answer.job === current.job) ? "card-valid" : "card-invalid";
+                    var valid_first_mention = (valid_answer.first_mention === current.first_mention) ? "card-valid" : "card-invalid";
+                    var valid_school_house = (valid_answer.school_house === current.school_house) ? "card-valid" : "card-invalid";
+
+                    $("#current-answer").append("<div class=\"card-container\"> \
+                        <div class=\"card card-answer " + valid_name + "\"><p>" + current.name + "</p></div> \
+                        <div class=\"card card-answer " + valid_gender + "\"><p>" + current.gender + "</p></div> \
+                        <div class=\"card card-answer " + valid_species + "\"><p>" + current.species + "</p></div> \
+                        <div class=\"card card-answer " + valid_magic + "\"><p>" + current.magic + "</p></div> \
+                        <div class=\"card card-answer " + valid_job + "\"><p>" + current.job + "</p></div> \
+                        <div class=\"card card-answer " + valid_first_mention + "\"><p>Book " + current.first_mention + "</p></div> \
+                        <div class=\"card card-answer " + valid_school_house + "\"><p>" + current.school_house + "</p></div> \
+                    </div>");
+                });
+            });
+        </script>
+    </body>
+</html>
