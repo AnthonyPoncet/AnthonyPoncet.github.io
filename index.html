@@ -249,7 +249,7 @@
                     var valid_first_mention = (valid_answer.first_mention === current.first_mention) ? "card-valid" : "card-invalid";
                     var valid_school_house = (valid_answer.school_house === current.school_house) ? "card-valid" : "card-invalid";
 
-                    $("#current-answer").append("<div class=\"card-container\"> \
+                    $("#current-answer").prepend("<div class=\"card-container\"> \
                         <div class=\"card card-answer " + valid_name + "\"><p>" + current.name + "</p></div> \
                         <div class=\"card card-answer " + valid_gender + "\"><p>" + current.gender + "</p></div> \
                         <div class=\"card card-answer " + valid_species + "\"><p>" + current.species + "</p></div> \
